@@ -59,11 +59,20 @@ def write_to_table(table_name, rows_to_insert):
     assert errors == []
     return
 
+def get_table(table_name):
+    '''
+    Connects to dataset and returns bigquery client and table reference
+    '''
+    client, dataset_ref = connect_db()
+    table_ref = dataset_ref.table(table_name)
+    table = client.get_table(table_ref)
+    return client, table
+
 
 query = (
     "SELECT author, subreddit_id, n_comments "
     "FROM `test1.subredditMembershipv2`"
-    "WHERE author in ('Useless_Patrick','TheScapeQuest','emsers')"
+    "WHERE n_comments >= 10"
 )
 
  
@@ -113,10 +122,11 @@ print('user_pairs complete: '+str(datetime.datetime.now()))
 
 # Number of shared subreddits by user
 # Numerator of the cosine similarity metric (dot product of User1,User2 vectors)
-shared_subs_by_user_pair = user_pairs.reduceByKey(lambda a, b: a+b)
-write_to_table(shared_subs_user_graph, shared_subs_by_user_pair.collect())
+shared_subs_by_user_pair = user_pairs.reduceByKey(lambda a, b: a+b).map(lambda x: (x[0][0], x[0][1], x[1]))
+print(shared_subs_by_user_pair.collect())
+write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair.collect())
 print('shared_subs_by_user_pair complete: '+str(datetime.datetime.now()))
-# print(shared_subs_by_user_pair.collect())
+
 
 # Norm of each user's subreddit vector 
 user_norm = user_sub_count.reduceByKey(lambda s1, s2: s1+s2).map(lambda x: (x[0], x[1]**0.5))
@@ -126,7 +136,7 @@ print('user_norm complete: '+str(datetime.datetime.now()))
 
 # Denominator of the cosine similarity distance, norm(user1)*norm(user2), for each user pair
 cos_sim_user_pair = shared_subs_by_user_pair\
-    .map(lambda x: (x[0], 1-x[1]/(user_norm_lookup[x[0][0]]*user_norm_lookup[x[0][1]])))
-write_to_table(cos_sim_user_pair, cos_sim_user_pair.collect())
+    .map(lambda x: (x[0], x[1], 1-x[2]/(user_norm_lookup[x[0]]*user_norm_lookup[x[1]])))
+# write_to_table('cosDistUserPair', cos_sim_user_pair.collect())
 print('cos_sim_user_pair complete:'+str(datetime.datetime.now()))
 # print(cos_sim_user_pair.collect())
