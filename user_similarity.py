@@ -118,7 +118,7 @@ print('user_pairs complete: '+str(datetime.datetime.now()))
 # Numerator of the cosine similarity metric (dot product of User1,User2 vectors)
 shared_subs_by_user_pair = user_pairs.reduceByKey(lambda a, b: a+b).map(lambda x: (x[0][0], x[0][1], x[1]))
 # print(shared_subs_by_user_pair.collect())
-# write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair.collect())
+write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair.collect())
 print('shared_subs_by_user_pair complete: '+str(datetime.datetime.now()))
 
 
@@ -131,6 +131,6 @@ print('user_norm complete: '+str(datetime.datetime.now()))
 # Denominator of the cosine similarity distance, norm(user1)*norm(user2), for each user pair
 cos_sim_user_pair = shared_subs_by_user_pair\
     .map(lambda x: (x[0], x[1], 1-x[2]/(user_norm_lookup[x[0]]*user_norm_lookup[x[1]])))
-# write_to_table('cosDistUserPair', cos_sim_user_pair.collect())
+write_to_table('cosDistUserPair', cos_sim_user_pair.collect())
 print('cos_sim_user_pair complete:'+str(datetime.datetime.now()))
 # print(cos_sim_user_pair.collect())
