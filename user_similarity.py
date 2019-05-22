@@ -72,24 +72,24 @@ def get_table(table_name):
 query = (
     "SELECT author, subreddit_id, n_comments "
     "FROM `test1.subredditMembershipv2`"
-    "LIMIT 100000"
+    "LIMIT 1000"
 )
 
  
 # API request - fetches results
 # Row values can be accessed by field name or index
-query_job = query_generator(query)
+# query_job = query_generator(query)
 
 
-# Writes QueryJob rows to a list to parallelize into Spark RDD
-query_job_list = list()
-for row in query_job:
-    row = list(row)
-    row.append(1)
-    query_job_list.append(tuple(i for i in row))
+# # Writes QueryJob rows to a list to parallelize into Spark RDD
+# query_job_list = list()
+# for row in query_job:
+#     row = list(row)
+#     row.append(1)
+#     query_job_list.append(tuple(i for i in row))
 
-# Convert output from QueryJob (list of tuples) into Spark RDD
-user_sub = sc.parallelize(sc.broadcast(query_job_list), 100)
+# # Convert output from QueryJob (list of tuples) into Spark RDD
+# user_sub = sc.parallelize(sc.broadcast(query_job_list), 100)
 
 # Test RDD Data
 user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
