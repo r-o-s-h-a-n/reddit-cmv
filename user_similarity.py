@@ -78,7 +78,7 @@ query = (
  
 # API request - fetches results
 # Row values can be accessed by field name or index
-# query_job = query_generator(query)
+query_job = query_generator(query)
 
 
 # Writes QueryJob rows to a list to parallelize into Spark RDD
