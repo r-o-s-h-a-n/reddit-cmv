@@ -7,21 +7,15 @@ from google.oauth2 import service_account
 
 # Set custom amount of memory/cores to use
 cores = '\'local[*]\''
-# memory = '10g'
-# pyspark_submit_args = ' --master ' + cores + ' --driver-memory ' + memory + ' pyspark-shell'
-pyspark_submit_args = ' --master ' + cores + ' pyspark-shell'
+driver_memory = '10g'
+pyspark_submit_args = ' --master ' + cores + ' --driver-memory ' + driver_memory + ' pyspark-shell'
+# pyspark_submit_args = ' --master ' + cores + ' pyspark-shell'
 os.environ["PYSPARK_SUBMIT_ARGS"] = pyspark_submit_args
 
 conf = SparkConf()
 sc = SparkContext(conf=conf)
 
 
-# credentials = service_account.Credentials.from_service_account_file(
-#     'reddit-239517_service_key.json')
-# project_id = 'reddit'
-# client = bigquery.Client(credentials= credentials,project=project_id)
-
-# client = bigquery.Client()
 
 def connect_db():
     '''
@@ -88,7 +82,8 @@ for row in query_job:
     query_job_list.append(tuple(i for i in row))
 
 # Convert output from QueryJob (list of tuples) into Spark RDD
-user_sub = sc.parallelize(query_job_list, 1000)
+partitions = 5000
+user_sub = sc.parallelize(query_job_list, partitions)
 
 # # Test RDD Data
 # user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
