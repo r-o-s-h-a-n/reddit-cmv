@@ -1,0 +1,3 @@
+pip3 install convokit
+python3 -m spacy download en
+
