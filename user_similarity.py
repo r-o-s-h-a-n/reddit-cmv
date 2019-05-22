@@ -72,7 +72,7 @@ def get_table(table_name):
 query = (
     "SELECT author, subreddit_id, n_comments "
     "FROM `test1.subredditMembershipv2`"
-    "LIMIT 1000"
+    "LIMIT 100000"
 )
 
  
@@ -81,30 +81,30 @@ query = (
 # query_job = query_generator(query)
 
 
-# # Writes QueryJob rows to a list to parallelize into Spark RDD
-# query_job_list = list()
-# for row in query_job:
-#     row = list(row)
-#     row.append(1)
-#     query_job_list.append(tuple(i for i in row))
+# Writes QueryJob rows to a list to parallelize into Spark RDD
+query_job_list = list()
+for row in query_job:
+    row = list(row)
+    row.append(1)
+    query_job_list.append(tuple(i for i in row))
 
-# # Convert output from QueryJob (list of tuples) into Spark RDD
-# user_sub = sc.parallelize(sc.broadcast(query_job_list), 100)
+# Convert output from QueryJob (list of tuples) into Spark RDD
+user_sub = sc.parallelize(sc.broadcast(query_job_list), 100)
 
-# Test RDD Data
-user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
-sub_user = sc.parallelize([('a',[2]), ('a',[1]), ('b',[1]), ('c',[3]), ('c',[4]), ('c',[5]), ('c',[1]), ('c',[2])])
-# print('sub_user')
-# print(sub_user.collect())
-sub_members = sub_user.reduceByKey(lambda a, b: a+b)
-# print('sub_members complete')
-# print(sub_members.collect())
-
-
-# user_sub_count = user_sub.map(lambda x: (x[0], 1))
-# sub_user = user_sub.map(lambda x: (x[1], [x[0]]))
+# # Test RDD Data
+# user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
+# sub_user = sc.parallelize([('a',[2]), ('a',[1]), ('b',[1]), ('c',[3]), ('c',[4]), ('c',[5]), ('c',[1]), ('c',[2])])
+# # print('sub_user')
+# # print(sub_user.collect())
 # sub_members = sub_user.reduceByKey(lambda a, b: a+b)
-# print('sub_members complete: '+str(datetime.datetime.now()))
+# # print('sub_members complete')
+# # print(sub_members.collect())
+
+
+user_sub_count = user_sub.map(lambda x: (x[0], 1))
+sub_user = user_sub.map(lambda x: (x[1], [x[0]]))
+sub_members = sub_user.reduceByKey(lambda a, b: a+b)
+print('sub_members complete: '+str(datetime.datetime.now()))
 
 
 # For each subreddit membership list, make tuples of all pairs of users, and map 1 as value
@@ -123,8 +123,8 @@ print('user_pairs complete: '+str(datetime.datetime.now()))
 # Number of shared subreddits by user
 # Numerator of the cosine similarity metric (dot product of User1,User2 vectors)
 shared_subs_by_user_pair = user_pairs.reduceByKey(lambda a, b: a+b).map(lambda x: (x[0][0], x[0][1], x[1]))
-print(shared_subs_by_user_pair.collect())
-write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair.collect())
+# print(shared_subs_by_user_pair.collect())
+# write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair.collect())
 print('shared_subs_by_user_pair complete: '+str(datetime.datetime.now()))
 
 
@@ -137,6 +137,6 @@ print('user_norm complete: '+str(datetime.datetime.now()))
 # Denominator of the cosine similarity distance, norm(user1)*norm(user2), for each user pair
 cos_sim_user_pair = shared_subs_by_user_pair\
     .map(lambda x: (x[0], x[1], 1-x[2]/(user_norm_lookup[x[0]]*user_norm_lookup[x[1]])))
-write_to_table('cosDistUserPair', cos_sim_user_pair.collect())
+# write_to_table('cosDistUserPair', cos_sim_user_pair.collect())
 print('cos_sim_user_pair complete:'+str(datetime.datetime.now()))
-print(cos_sim_user_pair.collect())
+# print(cos_sim_user_pair.collect())
