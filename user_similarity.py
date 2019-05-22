@@ -92,19 +92,19 @@ for row in query_job:
 user_sub = sc.parallelize(sc.broadcast(query_job_list), 100)
 
 # Test RDD Data
-# user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
-# sub_user = sc.parallelize([('a',[2]), ('a',[1]), ('b',[1]), ('c',[3]), ('c',[4]), ('c',[5]), ('c',[1]), ('c',[2])])
+user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
+sub_user = sc.parallelize([('a',[2]), ('a',[1]), ('b',[1]), ('c',[3]), ('c',[4]), ('c',[5]), ('c',[1]), ('c',[2])])
 # print('sub_user')
 # print(sub_user.collect())
-# sub_members = sub_user.reduceByKey(lambda a, b: a+b)
+sub_members = sub_user.reduceByKey(lambda a, b: a+b)
 # print('sub_members complete')
 # print(sub_members.collect())
 
 
-user_sub_count = user_sub.map(lambda x: (x[0], 1))
-sub_user = user_sub.map(lambda x: (x[1], [x[0]]))
-sub_members = sub_user.reduceByKey(lambda a, b: a+b)
-print('sub_members complete: '+str(datetime.datetime.now()))
+# user_sub_count = user_sub.map(lambda x: (x[0], 1))
+# sub_user = user_sub.map(lambda x: (x[1], [x[0]]))
+# sub_members = sub_user.reduceByKey(lambda a, b: a+b)
+# print('sub_members complete: '+str(datetime.datetime.now()))
 
 
 # For each subreddit membership list, make tuples of all pairs of users, and map 1 as value
