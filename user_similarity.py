@@ -72,6 +72,7 @@ def get_table(table_name):
 query = (
     "SELECT author, subreddit_id, n_comments "
     "FROM `test1.subredditMembershipv2`"
+    "LIMIT 1000"
 )
 
  
