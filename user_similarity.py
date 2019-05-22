@@ -88,7 +88,7 @@ for row in query_job:
     query_job_list.append(tuple(i for i in row))
 
 # Convert output from QueryJob (list of tuples) into Spark RDD
-user_sub = sc.parallelize(query_job_list, 100)
+user_sub = sc.parallelize(query_job_list, 1000)
 
 # # Test RDD Data
 # user_sub_count = sc.parallelize([(1, 1), (1, 1), (1, 1), (2, 1), (2, 1), (3, 1), (4, 1), (5, 1)])
