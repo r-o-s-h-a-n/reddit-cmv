@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# gcloud
+*service_key.json
+
+# project
+setup.sh
