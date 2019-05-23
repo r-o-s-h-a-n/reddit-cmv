@@ -5,11 +5,18 @@ from pyspark import SparkConf, SparkContext
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# Set custom amount of memory/cores to use
+# Set Spark Configuration
 cores = '\'local[*]\''
-driver_memory = '10g'
-pyspark_submit_args = ' --master ' + cores + ' --driver-memory ' + driver_memory + ' pyspark-shell'
-# pyspark_submit_args = ' --master ' + cores + ' pyspark-shell'
+driver_memory = '18g'
+network_timeout = 10000000
+executor_heartbeat_interval = 1000000
+pyspark_submit_args = 
+    ' --master ' + cores + 
+    ' --driver-memory ' + driver_memory + 
+    ' --spark.network.timeout ' + network_timeout +
+    ' --spark.executor.heartbeatInterval ' + executor_heartbeat_interval +
+    ' pyspark-shell'
+
 os.environ["PYSPARK_SUBMIT_ARGS"] = pyspark_submit_args
 
 conf = SparkConf()
@@ -82,7 +89,7 @@ for row in query_job:
     query_job_list.append(tuple(i for i in row))
 
 # Convert output from QueryJob (list of tuples) into Spark RDD
-partitions = 5000
+partitions = 8000
 user_sub = sc.parallelize(query_job_list, partitions)
 
 # # Test RDD Data
@@ -108,6 +115,7 @@ user_pairs = sub_members\
     .flatMap(lambda x: x)\
     .map(lambda x: (x, 1))
 
+user_pairs = user_pairs.repartition(partitions)
 
 # Sort the user-user pairs so they'll group together
 user_pairs = user_pairs.map(lambda x: ((sorted(x[0])[0], sorted(x[0])[1]), x[1]))
