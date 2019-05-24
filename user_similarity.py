@@ -8,13 +8,13 @@ from google.oauth2 import service_account
 # Set Spark Configuration
 cores = '\'local[*]\''
 driver_memory = '18g'
-network_timeout = 10000000
-executor_heartbeat_interval = 1000000
-pyspark_submit_args = 
-    ' --master ' + cores + 
-    ' --driver-memory ' + driver_memory + 
-    ' --spark.network.timeout ' + network_timeout +
-    ' --spark.executor.heartbeatInterval ' + executor_heartbeat_interval +
+network_timeout = '10000000'
+executor_heartbeat_interval = '1000000'
+pyspark_submit_args = \
+    ' --master ' + cores + \
+    ' --driver-memory ' + driver_memory + \
+    ' --conf spark.network.timeout=' + network_timeout + \
+    ' --conf spark.executor.heartbeatInterval=' + executor_heartbeat_interval + \
     ' pyspark-shell'
 
 os.environ["PYSPARK_SUBMIT_ARGS"] = pyspark_submit_args
@@ -73,6 +73,7 @@ def get_table(table_name):
 query = (
     "SELECT author, subreddit_id, n_comments "
     "FROM `test1.subredditMembershipv2`"
+    "LIMIT 100000"
 )
 
  
@@ -84,8 +85,7 @@ query_job = query_generator(query)
 # Writes QueryJob rows to a list to parallelize into Spark RDD
 query_job_list = list()
 for row in query_job:
-    row = list(row)
-    row.append(1)
+    # row = list(row)
     query_job_list.append(tuple(i for i in row))
 
 # Convert output from QueryJob (list of tuples) into Spark RDD
@@ -111,10 +111,12 @@ print('sub_members complete: '+str(datetime.datetime.now()))
 # For each subreddit membership list, make tuples of all pairs of users, and map 1 as value
 # The 1 can be replaced as the weighted IDF constant (later)
 user_pairs = sub_members\
-    .map(lambda x: [(x[1][i], x[1][j]) for i in range(len(x[1])) for j in range(i+1, len(x[1]))])\
+    .map(lambda x: [(x[1][i], x[1][j]) for i in range(len(x[1])) for j in range(i+1, len(x[1]))])
+user_pairs = user_pairs.repartition(partitions)
+
+user_pairs = user_pairs\
     .flatMap(lambda x: x)\
     .map(lambda x: (x, 1))
-
 user_pairs = user_pairs.repartition(partitions)
 
 # Sort the user-user pairs so they'll group together
@@ -125,9 +127,15 @@ print('user_pairs complete: '+str(datetime.datetime.now()))
 # Number of shared subreddits by user
 # Numerator of the cosine similarity metric (dot product of User1,User2 vectors)
 shared_subs_by_user_pair = user_pairs.reduceByKey(lambda a, b: a+b).map(lambda x: (x[0][0], x[0][1], x[1]))
+shared_subs_by_user_pair = shared_subs_by_user_pair.repartition(partitions)
+print('shared_subs_by_user_pair calc complete: '+str(datetime.datetime.now()))
 # print(shared_subs_by_user_pair.collect())
-write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair.collect())
-print('shared_subs_by_user_pair complete: '+str(datetime.datetime.now()))
+
+shared_subs_by_user_pair = shared_subs_by_user_pair.collect()
+print('shared_subs_by_user_pair collect complete: '+str(datetime.datetime.now()))
+
+write_to_table('sharedSubsUserGraph', shared_subs_by_user_pair)
+print('shared_subs_by_user_pair write complete: '+str(datetime.datetime.now()))
 
 
 # Norm of each user's subreddit vector 
