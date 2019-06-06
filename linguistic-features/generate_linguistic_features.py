@@ -9,6 +9,7 @@ from io import BytesIO
 import collections as C
 import pickle
 import numpy as np
+import pprint
 
 import nltk
 from collections import Counter
@@ -28,7 +29,7 @@ fname = "cmv.tar.bz2"
 url = "https://chenhaot.com/data/cmv/" + fname
 
 # Instantiate output file
-g = open('linguistic_results.csv', 'w')
+g = open('linguistic_results_train.csv', 'w')
 gwriter = csv.writer(g)
 gwriter.writerow([
     'op',
@@ -97,7 +98,16 @@ print(len(original_posts_train))
 
 op_ids_seen = set()
 
+# q = 0
+# pp = pprint.PrettyPrinter(indent=4, compact=True)
+# for post in original_posts_train:
+#     pp.pprint(post['positive']['comments'][0]['created_utc'])
+#     pp.pprint(post['negative']['comments'][0]['created_utc'])
+#     q += 1
+#     if q == 5:
+#         break
 
+# exit()
 
 # DEFINE LINGUISTIC FEATURE EXTRACTORS
 
@@ -458,15 +468,18 @@ for post in original_posts_train:
     # write neg awarded
     author = post['negative']['author']
     comment_id = post['negative']['comments'][0]['id']
+
     if author == '[deleted]':
         continue
 
     if author != '[deleted]':
         neg_text = post['negative']['comments'][0]['body']
         print("len(neg_text):", len(neg_text))
+        comment_created_utc = post['negative']['comments'][0]['created_utc']
 
         output_line.append(author)
         output_line.append(comment_id)
+        # output_line.append(comment_created_utc)
         # output_line.append(neg_text)
         output_line.append(0)
         output_line.extend(gen_all_ling_features(post_text, neg_text, all_funcs))
@@ -485,9 +498,11 @@ for post in original_posts_train:
     if author != '[deleted]':    
         pos_text = post['positive']['comments'][0]['body']
         print("len(pos_text):", len(pos_text))
+        comment_created_utc = post['positive']['comments'][0]['created_utc']
 
         output_line.append(author)
         output_line.append(comment_id)
+        # output_line.append(comment_created_utc)
         # output_line.append(pos_text)
         output_line.append(1)
         output_line.extend(gen_all_ling_features(post_text, pos_text, all_funcs))
