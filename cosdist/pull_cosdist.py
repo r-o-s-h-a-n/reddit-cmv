@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from google.cloud import bigquery
 from google.oauth2 import service_account
+import csv
 
 
 def connect_db():
@@ -74,9 +75,12 @@ def get_table(table_name):
 #     # row = list(row)
 #     query_job_list.append(tuple(i for i in row))
 
+g = open('cosdist_output.csv', 'w')
+gwriter = csv.writer(g)
 
 t = 0
 with open('costdist_testfile.csv', 'r') as f:
+    gwriter.writerow(['op','post_id','challenger','comment_id','delta_awarded','cosineDist'])
     for i, line in enumerate(f):             
         if i == 0:
             continue
@@ -92,19 +96,25 @@ with open('costdist_testfile.csv', 'r') as f:
             "FROM `cosDist."+ym_str+"` as cd "
             "WHERE cd.user1 = '"+op_name+"' AND cd.user2 = '"+challenger_name+"'"
         )
-        print(query_tosend)
+        print(ym_str+' ('+op_name+', '+challenger_name+')')
         query_job = query(query_tosend)
 
         if len(query_job) == 1:
-            print(query_job[0][0])
+            line.append(query_job[0][0])
         elif(len(query_job) > 1):
             print('Dupes')
         else:
             print('None')
+            line.append(1)
+
+        
+        gwriter.writerow(line)
 
         t += 1
-        if t == 10:
-            break
+        # if t == 10:
+        #     break
+
+
 
 
 
