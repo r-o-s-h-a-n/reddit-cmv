@@ -29,7 +29,7 @@ fname = "cmv.tar.bz2"
 url = "https://chenhaot.com/data/cmv/" + fname
 
 # Instantiate output file
-g = open('linguistic_results_train.csv', 'w')
+g = open('linguistic_results_utc_train.csv', 'w')
 gwriter = csv.writer(g)
 gwriter.writerow([
     'op',
@@ -37,6 +37,7 @@ gwriter.writerow([
     # 'post_text',
     'challenger',
     'comment_id',
+    'created_utc',
     # 'challenger_text',
     'delta_awarded',
     'num_words',
@@ -479,7 +480,7 @@ for post in original_posts_train:
 
         output_line.append(author)
         output_line.append(comment_id)
-        # output_line.append(comment_created_utc)
+        output_line.append(comment_created_utc)
         # output_line.append(neg_text)
         output_line.append(0)
         output_line.extend(gen_all_ling_features(post_text, neg_text, all_funcs))
@@ -502,7 +503,7 @@ for post in original_posts_train:
 
         output_line.append(author)
         output_line.append(comment_id)
-        # output_line.append(comment_created_utc)
+        output_line.append(comment_created_utc)
         # output_line.append(pos_text)
         output_line.append(1)
         output_line.extend(gen_all_ling_features(post_text, pos_text, all_funcs))
