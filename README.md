@@ -1,5 +1,5 @@
 # reddit-cmv
-Analyses reddit graph factors associated whether or not OP will award delta on Reddit r/ChangeMyView
+Analyses reddit graph factors associated whether or not OP will award delta on Reddit r/ChangeMyView. To see more about our methodology and results, please start by reading `poster.pdf` or `report.pdf`.
 
 1. Create a virtual environment.
 2. Run `pip install -r requirements.txt`.
